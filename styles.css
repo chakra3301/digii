@@ -111,59 +111,15 @@ header {
     }
 }
 
-.cube {
+/* 3D Scene Canvas */
+.character-3d-scene {
     width: 100%;
     height: 100%;
-    position: relative;
-    transform-style: preserve-3d;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Wireframe faces */
-.cube-face {
     position: absolute;
-    border: 2px solid #0ff;
-    background: rgba(0, 255, 255, 0.05);
-    box-shadow: 
-        0 0 10px rgba(0, 255, 255, 0.3),
-        inset 0 0 10px rgba(0, 255, 255, 0.1);
-}
-
-.cube-face.front {
-    width: 280px;
-    height: 320px;
-    transform: translateZ(140px);
-}
-
-.cube-face.back {
-    width: 280px;
-    height: 320px;
-    transform: rotateY(180deg) translateZ(140px);
-}
-
-.cube-face.right {
-    width: 280px;
-    height: 320px;
-    transform: rotateY(90deg) translateZ(140px);
-}
-
-.cube-face.left {
-    width: 280px;
-    height: 320px;
-    transform: rotateY(-90deg) translateZ(140px);
-}
-
-.cube-face.top {
-    width: 280px;
-    height: 280px;
-    transform: rotateX(90deg) translateZ(160px);
-}
-
-.cube-face.bottom {
-    width: 280px;
-    height: 280px;
-    transform: rotateX(-90deg) translateZ(160px);
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+    top: 0;
+    left: 0;
+    z-index: 10;
+    pointer-events: none;
 }
 
 /* Character Image */
@@ -386,20 +342,6 @@ header {
     .character-cube {
         width: 200px;
         height: 240px;
-    }
-    
-    .cube-face.front,
-    .cube-face.back,
-    .cube-face.right,
-    .cube-face.left {
-        width: 200px;
-        height: 240px;
-    }
-    
-    .cube-face.top,
-    .cube-face.bottom {
-        width: 200px;
-        height: 200px;
     }
     
     .stats-panel {

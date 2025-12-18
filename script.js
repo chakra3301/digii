@@ -322,7 +322,7 @@ function initBackground() {
     });
 }
 
-// Create character cubes
+// Create character cubes with wireframe sphere
 function createCharacterCubes() {
     const gallery = document.getElementById('gallery');
     
@@ -334,44 +334,21 @@ function createCharacterCubes() {
         const wrapper = document.createElement('div');
         wrapper.className = 'cube-wrapper';
         
-        const cube = document.createElement('div');
-        cube.className = 'cube';
+        // Create canvas for 3D scene (sphere + character)
+        const canvas = document.createElement('canvas');
+        canvas.className = 'character-3d-scene';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.position = 'absolute';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.zIndex = '10';
         
-        // Create cube faces
-        const faces = ['front', 'back', 'right', 'left', 'top', 'bottom'];
-        faces.forEach(face => {
-            const faceElement = document.createElement('div');
-            faceElement.className = `cube-face ${face}`;
-            cube.appendChild(faceElement);
-        });
-        
-        // Check if character is 3D model or image
-        if (character.type === '3d' && character.model) {
-            // Create canvas for 3D model
-            const canvas = document.createElement('canvas');
-            canvas.className = 'character-3d-model';
-            canvas.style.width = '100%';
-            canvas.style.height = '100%';
-            canvas.style.position = 'absolute';
-            canvas.style.top = '50%';
-            canvas.style.left = '50%';
-            canvas.style.transform = 'translate(-50%, -50%)';
-            canvas.style.zIndex = '10';
-            cube.appendChild(canvas);
-            
-            // Initialize 3D model scene
-            initCharacter3DModel(canvas, character.model, cubeWrapper);
-        } else {
-            // Character image (2D)
-            const img = document.createElement('img');
-            img.src = character.image;
-            img.alt = character.name;
-            img.className = 'character-image pixelated';
-            cube.appendChild(img);
-        }
-        
-        wrapper.appendChild(cube);
+        wrapper.appendChild(canvas);
         cubeWrapper.appendChild(wrapper);
+        
+        // Initialize 3D scene with wireframe sphere and character
+        initCharacterSphere(canvas, character, cubeWrapper);
         
         // Character label
         const label = document.createElement('div');
@@ -389,8 +366,8 @@ function createCharacterCubes() {
     });
 }
 
-// Initialize 3D model for a character cube
-function initCharacter3DModel(canvas, modelPath, cubeWrapper) {
+// Initialize 3D scene with wireframe sphere and character
+function initCharacterSphere(canvas, character, cubeWrapper) {
     if (typeof THREE === 'undefined') {
         console.error('THREE is not defined. Cannot load 3D model.');
         return;
@@ -427,70 +404,121 @@ function initCharacter3DModel(canvas, modelPath, cubeWrapper) {
     directionalLight2.position.set(-5, -5, -5);
     scene.add(directionalLight2);
     
-    // Load GLB model
-    let model = null;
-    let mixer = null;
-    
-    // Check if GLTFLoader is available (from window, not THREE object)
+    // Check if GLTFLoader is available
     const GLTFLoaderClass = window.GLTFLoader || window.GLTFLoaderModule;
     
-    if (GLTFLoaderClass) {
-        const loader = new GLTFLoaderClass();
-        
+    if (!GLTFLoaderClass) {
+        console.error('GLTFLoader not available');
+        return;
+    }
+    
+    const loader = new GLTFLoaderClass();
+    let sphereModel = null;
+    let characterModel = null;
+    let mixer = null;
+    let modelsLoaded = 0;
+    const totalModels = 2; // sphere + character (if 3D)
+    
+    // Load wireframe sphere
+    loader.load(
+        'wireframe_sphere.glb',
+        (gltf) => {
+            sphereModel = gltf.scene;
+            
+            // Scale sphere to fit nicely
+            const box = new THREE.Box3().setFromObject(sphereModel);
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 4.5 / maxDim; // Make sphere slightly larger
+            sphereModel.scale.multiplyScalar(scale);
+            
+            // Center sphere
+            const center = box.getCenter(new THREE.Vector3());
+            sphereModel.position.x = -center.x * scale;
+            sphereModel.position.y = -center.y * scale;
+            sphereModel.position.z = -center.z * scale;
+            
+            scene.add(sphereModel);
+            modelsLoaded++;
+            
+            // Load character if it's a 3D model
+            if (character.type === '3d' && character.model) {
+                loadCharacterModel();
+            } else {
+                // For 2D images, we'll handle them differently or just show sphere
+                modelsLoaded++;
+            }
+        },
+        undefined,
+        (error) => {
+            console.error('Error loading wireframe sphere:', error);
+        }
+    );
+    
+    // Load character model (if 3D)
+    function loadCharacterModel() {
         loader.load(
-            modelPath,
+            character.model,
             (gltf) => {
-                model = gltf.scene;
+                characterModel = gltf.scene;
                 
-                // Center and scale model
-                const box = new THREE.Box3().setFromObject(model);
+                // Center and scale character to fit inside sphere
+                const box = new THREE.Box3().setFromObject(characterModel);
                 const center = box.getCenter(new THREE.Vector3());
                 const size = box.getSize(new THREE.Vector3());
                 
                 const maxDim = Math.max(size.x, size.y, size.z);
-                const scale = 3 / maxDim;
-                model.scale.multiplyScalar(scale);
+                const scale = 2.5 / maxDim; // Smaller than sphere
+                characterModel.scale.multiplyScalar(scale);
                 
-                model.position.x = -center.x * scale;
-                model.position.y = -center.y * scale;
-                model.position.z = -center.z * scale;
+                characterModel.position.x = -center.x * scale;
+                characterModel.position.y = -center.y * scale;
+                characterModel.position.z = -center.z * scale;
                 
-                scene.add(model);
+                scene.add(characterModel);
                 
                 // Handle animations if present
                 if (gltf.animations && gltf.animations.length > 0) {
-                    mixer = new THREE.AnimationMixer(model);
+                    mixer = new THREE.AnimationMixer(characterModel);
                     gltf.animations.forEach((clip) => {
                         mixer.clipAction(clip).play();
                     });
                 }
                 
-                // Store model reference for rotation
+                modelsLoaded++;
                 cubeWrapper.dataset.model3d = 'true';
             },
-            (progress) => {
-                // Loading progress (optional)
-                if (progress.lengthComputable) {
-                    const percentComplete = progress.loaded / progress.total * 100;
-                    console.log('Loading model: ' + percentComplete + '%');
-                }
-            },
+            undefined,
             (error) => {
-                console.error('Error loading 3D model:', error);
-                // Fallback: show error message
-                const errorDiv = document.createElement('div');
-                errorDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#0ff;font-size:12px;';
-                errorDiv.textContent = 'Model load error';
-                canvas.parentElement.appendChild(errorDiv);
+                console.error('Error loading character model:', error);
+                modelsLoaded++;
             }
         );
-    } else {
-        console.error('GLTFLoader not available');
-        // Fallback message
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#0ff;font-size:12px;';
-        errorDiv.textContent = '3D loader unavailable';
-        canvas.parentElement.appendChild(errorDiv);
+    }
+    
+    // For 2D images, create a plane with the image texture
+    if (!character.type || character.type !== '3d') {
+        const textureLoader = new THREE.TextureLoader();
+        textureLoader.load(
+            character.image,
+            (texture) => {
+                const geometry = new THREE.PlaneGeometry(2, 2.3);
+                const material = new THREE.MeshBasicMaterial({
+                    map: texture,
+                    transparent: true,
+                    side: THREE.DoubleSide
+                });
+                const plane = new THREE.Mesh(geometry, material);
+                plane.position.z = 0;
+                scene.add(plane);
+                modelsLoaded++;
+            },
+            undefined,
+            (error) => {
+                console.error('Error loading character image:', error);
+                modelsLoaded++;
+            }
+        );
     }
     
     // Animation loop
@@ -503,9 +531,15 @@ function initCharacter3DModel(canvas, modelPath, cubeWrapper) {
             mixer.update(delta);
         }
         
-        // Slow rotation
-        if (model) {
-            model.rotation.y += 0.005;
+        // Rotate sphere slowly
+        if (sphereModel) {
+            sphereModel.rotation.y += 0.003;
+            sphereModel.rotation.x += 0.001;
+        }
+        
+        // Rotate character slowly (opposite direction for visual interest)
+        if (characterModel) {
+            characterModel.rotation.y -= 0.005;
         }
         
         renderer.render(scene, camera);
@@ -532,15 +566,8 @@ function enlargeCharacter(index) {
     // Show stats panel
     showStatsPanel(character);
     
-    // Add rotation animation
-    const cube = clickedCube.querySelector('.cube');
-    let rotation = 0;
-    const rotateInterval = setInterval(() => {
-        rotation += 2;
-        cube.style.transform = `rotateY(${rotation}deg)`;
-    }, 50);
-    
-    clickedCube.dataset.rotateInterval = rotateInterval;
+    // Note: Rotation is now handled by Three.js animation loop
+    // No need for CSS rotation on the cube element
 }
 
 // Create overlay
@@ -559,14 +586,7 @@ function closeEnlarged() {
     const statsPanel = document.getElementById('statsPanel');
     
     if (enlargedCube) {
-        const rotateInterval = enlargedCube.dataset.rotateInterval;
-        if (rotateInterval) {
-            clearInterval(parseInt(rotateInterval));
-        }
-        
-        const cube = enlargedCube.querySelector('.cube');
-        cube.style.transform = '';
-        
+        // No need to clear rotation interval as it's handled by Three.js
         enlargedCube.classList.remove('enlarged');
     }
     
