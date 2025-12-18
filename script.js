@@ -392,6 +392,9 @@ function initCharacterSphere(canvas, character, cubeWrapper) {
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     
+    // Disable depth test for better transparency rendering
+    renderer.sortObjects = false;
+    
     // Lighting
     const ambientLight = new THREE.AmbientLight(0x00ffff, 0.6);
     scene.add(ambientLight);
@@ -424,6 +427,24 @@ function initCharacterSphere(canvas, character, cubeWrapper) {
         'wireframe_sphere.glb',
         (gltf) => {
             sphereModel = gltf.scene;
+            
+            // Make sphere materials transparent and grey
+            sphereModel.traverse((child) => {
+                if (child.isMesh) {
+                    // Update material to be transparent and grey
+                    if (child.material) {
+                        child.material.transparent = true;
+                        child.material.opacity = 0.3; // More transparent
+                        child.material.color.set(0x888888); // Grey color
+                        child.material.emissive.set(0x444444); // Subtle grey glow
+                        child.material.needsUpdate = true;
+                    }
+                    // Disable depth write to prevent clipping issues
+                    if (child.material) {
+                        child.material.depthWrite = false;
+                    }
+                }
+            });
             
             // Scale sphere to fit nicely
             const box = new THREE.Box3().setFromObject(sphereModel);
@@ -531,10 +552,10 @@ function initCharacterSphere(canvas, character, cubeWrapper) {
             mixer.update(delta);
         }
         
-        // Rotate sphere slowly
+        // Rotate sphere horizontally only (360 degrees on Y axis)
         if (sphereModel) {
             sphereModel.rotation.y += 0.003;
-            sphereModel.rotation.x += 0.001;
+            // Remove X rotation to only rotate horizontally
         }
         
         // Rotate character slowly (opposite direction for visual interest)
