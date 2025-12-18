@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Gallery - Retro 3D</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="background-canvas"></div>
+    <div class="overlay"></div>
+    
+    <div class="container">
+        <header>
+            <img src="new digi.png" alt="DIGI GHOST" class="title-logo">
+        </header>
+        
+        <div class="gallery" id="gallery">
+            <!-- Character cubes will be dynamically generated -->
+        </div>
+    </div>
+    
+    <!-- Stats Panel (hidden by default) -->
+    <div class="stats-panel" id="statsPanel">
+        <div class="stats-content">
+            <button class="close-btn" id="closeBtn">×</button>
+            <div class="stats-header">
+                <h2 class="character-name" id="characterName"></h2>
+                <p class="character-id" id="characterId"></p>
+            </div>
+            <div class="stats-body" id="statsBody">
+                <!-- Stats will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Import map for module resolution -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/"
+        }
+    }
+    </script>
+    
+    <!-- Load Three.js and GLTFLoader as modules -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        
+        // Make available globally for non-module scripts
+        // Don't try to add to THREE object as it may be frozen
+        window.THREE = THREE;
+        window.GLTFLoader = GLTFLoader; // Store separately
+        window.GLTFLoaderModule = GLTFLoader;
+        
+        console.log('✓ Three.js loaded as module');
+        console.log('✓ GLTFLoader loaded');
+        
+        // Load main script
+        const mainScript = document.createElement('script');
+        mainScript.src = 'script.js';
+        document.body.appendChild(mainScript);
+    </script>
+    
+    <!-- Fallback: Load Three.js as global script for older browsers -->
+    <script nomodule>
+        console.warn('ES modules not supported, loading Three.js as global...');
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r150/three.min.js';
+        script.onload = function() {
+            console.log('Three.js loaded (fallback mode)');
+            const mainScript = document.createElement('script');
+            mainScript.src = 'script.js';
+            document.body.appendChild(mainScript);
+        };
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>
+
