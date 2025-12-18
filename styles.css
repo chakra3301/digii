@@ -37,19 +37,41 @@ body {
 .container {
     position: relative;
     z-index: 1;
-    padding: 40px 20px;
+    padding: 20px 10px;
+    padding-top: 10px; /* Add space for fixed header */
     max-width: 1400px;
     margin: 0 auto;
 }
 
+@media (min-width: 768px) {
+    .container {
+        padding-top: 20px; /* Less padding on desktop */
+    }
+}
+
 /* Header */
-header {
-    text-align: center;
-    margin-bottom: 60px;
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 1400px;
+    padding: 10px 16px;
+    background: #000;
+    z-index: 99999;
+    margin: 0 auto;
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 .title-logo {
-    max-width: 600px;
+    max-width: 400px;
     width: 100%;
     height: auto;
     image-rendering: pixelated;
@@ -57,7 +79,53 @@ header {
     image-rendering: crisp-edges;
     filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.6));
     display: block;
-    margin: 0 auto;
+}
+
+.header-nav {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.nav-link {
+    color: #0ff;
+    text-decoration: none;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.nav-link:hover {
+    color: #0aa;
+    text-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+    transform: translateY(-2px);
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+    .main-header {
+        left: 0;
+        transform: translateX(0);
+        width: 100%;
+        background: transparent;
+        position: relative;
+        margin-top: 10px;
+    }
+    
+    .header-content {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+}
+
+@media (min-width: 1280px) {
+    .main-header {
+        left: 32px;
+    }
 }
 
 /* Gallery */
