@@ -416,80 +416,23 @@ function initCharacterSphere(canvas, character, cubeWrapper) {
     }
     
     const loader = new GLTFLoaderClass();
-    let sphereModel = null;
     let characterModel = null;
     let mixer = null;
-    let modelsLoaded = 0;
-    const totalModels = 2; // sphere + character (if 3D)
-    
-    // Load wireframe sphere
-    loader.load(
-        'wireframe_sphere.glb',
-        (gltf) => {
-            sphereModel = gltf.scene;
-            
-            // Make sphere materials transparent and grey
-            sphereModel.traverse((child) => {
-                if (child.isMesh) {
-                    // Update material to be transparent and grey
-                    if (child.material) {
-                        child.material.transparent = true;
-                        child.material.opacity = 0.3; // More transparent
-                        child.material.color.set(0x888888); // Grey color
-                        child.material.emissive.set(0x444444); // Subtle grey glow
-                        child.material.needsUpdate = true;
-                    }
-                    // Disable depth write to prevent clipping issues
-                    if (child.material) {
-                        child.material.depthWrite = false;
-                    }
-                }
-            });
-            
-            // Scale sphere to fit nicely
-            const box = new THREE.Box3().setFromObject(sphereModel);
-            const size = box.getSize(new THREE.Vector3());
-            const maxDim = Math.max(size.x, size.y, size.z);
-            const scale = 4.5 / maxDim; // Make sphere slightly larger
-            sphereModel.scale.multiplyScalar(scale);
-            
-            // Center sphere
-            const center = box.getCenter(new THREE.Vector3());
-            sphereModel.position.x = -center.x * scale;
-            sphereModel.position.y = -center.y * scale;
-            sphereModel.position.z = -center.z * scale;
-            
-            scene.add(sphereModel);
-            modelsLoaded++;
-            
-            // Load character if it's a 3D model
-            if (character.type === '3d' && character.model) {
-                loadCharacterModel();
-            } else {
-                // For 2D images, we'll handle them differently or just show sphere
-                modelsLoaded++;
-            }
-        },
-        undefined,
-        (error) => {
-            console.error('Error loading wireframe sphere:', error);
-        }
-    );
     
     // Load character model (if 3D)
-    function loadCharacterModel() {
+    if (character.type === '3d' && character.model) {
         loader.load(
             character.model,
             (gltf) => {
                 characterModel = gltf.scene;
                 
-                // Center and scale character to fit inside sphere
+                // Center and scale character
                 const box = new THREE.Box3().setFromObject(characterModel);
                 const center = box.getCenter(new THREE.Vector3());
                 const size = box.getSize(new THREE.Vector3());
                 
                 const maxDim = Math.max(size.x, size.y, size.z);
-                const scale = 2.5 / maxDim; // Smaller than sphere
+                const scale = 3.5 / maxDim; // Scale to fit nicely
                 characterModel.scale.multiplyScalar(scale);
                 
                 characterModel.position.x = -center.x * scale;
@@ -506,19 +449,15 @@ function initCharacterSphere(canvas, character, cubeWrapper) {
                     });
                 }
                 
-                modelsLoaded++;
                 cubeWrapper.dataset.model3d = 'true';
             },
             undefined,
             (error) => {
                 console.error('Error loading character model:', error);
-                modelsLoaded++;
             }
         );
-    }
-    
-    // For 2D images, create a plane with the image texture
-    if (!character.type || character.type !== '3d') {
+    } else {
+        // For 2D images, create a plane with the image texture
         const textureLoader = new THREE.TextureLoader();
         textureLoader.load(
             character.image,
@@ -532,12 +471,10 @@ function initCharacterSphere(canvas, character, cubeWrapper) {
                 const plane = new THREE.Mesh(geometry, material);
                 plane.position.z = 0;
                 scene.add(plane);
-                modelsLoaded++;
             },
             undefined,
             (error) => {
                 console.error('Error loading character image:', error);
-                modelsLoaded++;
             }
         );
     }
@@ -552,15 +489,9 @@ function initCharacterSphere(canvas, character, cubeWrapper) {
             mixer.update(delta);
         }
         
-        // Rotate sphere horizontally only (360 degrees on Y axis)
-        if (sphereModel) {
-            sphereModel.rotation.y += 0.003;
-            // Remove X rotation to only rotate horizontally
-        }
-        
-        // Rotate character slowly (opposite direction for visual interest)
+        // Rotate character slowly
         if (characterModel) {
-            characterModel.rotation.y -= 0.005;
+            characterModel.rotation.y += 0.005;
         }
         
         renderer.render(scene, camera);
