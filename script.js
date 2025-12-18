@@ -395,17 +395,26 @@ function initCharacterSphere(canvas, character, cubeWrapper) {
     // Disable depth test for better transparency rendering
     renderer.sortObjects = false;
     
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0x00ffff, 0.6);
+    // Lighting - brighter setup
+    const ambientLight = new THREE.AmbientLight(0x00ffff, 1.2);
     scene.add(ambientLight);
     
-    const directionalLight1 = new THREE.DirectionalLight(0x00ffff, 0.5);
+    const directionalLight1 = new THREE.DirectionalLight(0x00ffff, 1.0);
     directionalLight1.position.set(5, 5, 5);
     scene.add(directionalLight1);
     
-    const directionalLight2 = new THREE.DirectionalLight(0x0088aa, 0.3);
-    directionalLight2.position.set(-5, -5, -5);
+    const directionalLight2 = new THREE.DirectionalLight(0x00ffff, 0.8);
+    directionalLight2.position.set(-5, 5, 5);
     scene.add(directionalLight2);
+    
+    const directionalLight3 = new THREE.DirectionalLight(0x00ffff, 0.6);
+    directionalLight3.position.set(0, -5, 5);
+    scene.add(directionalLight3);
+    
+    // Add point light for extra brightness
+    const pointLight = new THREE.PointLight(0x00ffff, 1.5, 10);
+    pointLight.position.set(0, 0, 5);
+    scene.add(pointLight);
     
     // Check if GLTFLoader is available
     const GLTFLoaderClass = window.GLTFLoader || window.GLTFLoaderModule;
