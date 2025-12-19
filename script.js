@@ -395,26 +395,38 @@ function initCharacterSphere(canvas, character, cubeWrapper) {
     // Disable depth test for better transparency rendering
     renderer.sortObjects = false;
     
-    // Lighting - brighter setup
-    const ambientLight = new THREE.AmbientLight(0x00ffff, 1.2);
+    // Lighting - maximum brightness setup
+    const ambientLight = new THREE.AmbientLight(0x00ffff, 2.0);
     scene.add(ambientLight);
     
-    const directionalLight1 = new THREE.DirectionalLight(0x00ffff, 1.0);
+    const directionalLight1 = new THREE.DirectionalLight(0x00ffff, 2.0);
     directionalLight1.position.set(5, 5, 5);
     scene.add(directionalLight1);
     
-    const directionalLight2 = new THREE.DirectionalLight(0x00ffff, 0.8);
+    const directionalLight2 = new THREE.DirectionalLight(0x00ffff, 1.5);
     directionalLight2.position.set(-5, 5, 5);
     scene.add(directionalLight2);
     
-    const directionalLight3 = new THREE.DirectionalLight(0x00ffff, 0.6);
+    const directionalLight3 = new THREE.DirectionalLight(0x00ffff, 1.2);
     directionalLight3.position.set(0, -5, 5);
     scene.add(directionalLight3);
     
-    // Add point light for extra brightness
-    const pointLight = new THREE.PointLight(0x00ffff, 1.5, 10);
-    pointLight.position.set(0, 0, 5);
-    scene.add(pointLight);
+    const directionalLight4 = new THREE.DirectionalLight(0x00ffff, 1.0);
+    directionalLight4.position.set(0, 5, -5);
+    scene.add(directionalLight4);
+    
+    // Add point lights for extra brightness
+    const pointLight1 = new THREE.PointLight(0x00ffff, 2.5, 10);
+    pointLight1.position.set(0, 0, 5);
+    scene.add(pointLight1);
+    
+    const pointLight2 = new THREE.PointLight(0x00ffff, 1.5, 10);
+    pointLight2.position.set(3, 3, 3);
+    scene.add(pointLight2);
+    
+    const pointLight3 = new THREE.PointLight(0x00ffff, 1.5, 10);
+    pointLight3.position.set(-3, -3, 3);
+    scene.add(pointLight3);
     
     // Check if GLTFLoader is available
     const GLTFLoaderClass = window.GLTFLoader || window.GLTFLoaderModule;
